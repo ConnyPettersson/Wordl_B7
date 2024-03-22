@@ -23,7 +23,8 @@ router.get('/', (req, res) => {
     words = ensureUniqueLetters(words); // Filtrera ord för att endast inkludera de med unika bokstäver
   }
 
-  res.json({ words });
+  console.log('We made it this far');
+  res.status(200).json({ words });
 });
 
 module.exports = router;

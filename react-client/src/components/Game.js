@@ -1,19 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import input from './input'; // Antag att detta är sökvägen till din input-funktion
-import selectWord from './selectWord'; // Antag att detta är sökvägen till din selectWord-funktion
-
-// Antag att du har en lista med ord, kanske importeras från en fil eller hämtas från en API
-const wordsList = ["apple", "banana", "cherry", "date", "fig", "grape"]; // Exempellista
+import React, { useState, useEffect } from "react";
+import input from "./input"; // Antag att detta är sökvägen till din input-funktion
+import selectWord from "./selectWord"; // Antag att detta är sökvägen till din selectWord-funktion
 
 const Game = () => {
-  const [correctWord, setCorrectWord] = useState('');
-  const [guess, setGuess] = useState('');
+  const [correctWord, setCorrectWord] = useState("");
+  const [guess, setGuess] = useState("");
   const [feedback, setFeedback] = useState([]);
   const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
-    // Välj ett ord när komponenten monteras
-    setCorrectWord(selectWord(wordsList, 5, false));
+    fetch("http://localhost:5080/api/words")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data.words);
+
+        const word = selectWord(data.words, 5, false); 
+
+        console.log('Correct word: ' + word)
+        setCorrectWord(word);
+      })
+      // .catch((error) => {
+      //   console.error("Fetch Error:", error);
+      // });
   }, []);
 
   const handleGuessSubmit = (e) => {
@@ -21,11 +34,11 @@ const Game = () => {
     const currentFeedback = input(guess, correctWord);
     setFeedback(currentFeedback);
 
-    if (currentFeedback.every(item => item.result === 'correct')) {
+    if (currentFeedback.every((item) => item.result === "correct")) {
       setGameOver(true);
     }
 
-    setGuess('');
+    setGuess("");
   };
 
   return (
@@ -44,7 +57,10 @@ const Game = () => {
           </form>
           <div>
             {feedback.map((item, index) => (
-              <span key={index} style={{ color: getFeedbackColor(item.result) }}>
+              <span
+                key={index}
+                style={{ color: getFeedbackColor(item.result) }}
+              >
                 {item.letter}
               </span>
             ))}
@@ -62,14 +78,14 @@ const Game = () => {
 
 const getFeedbackColor = (result) => {
   switch (result) {
-    case 'correct':
-      return 'green';
-    case 'misplaced':
-      return 'yellow';
-    case 'incorrect':
-      return 'red';
+    case "correct":
+      return "green";
+    case "misplaced":
+      return "yellow";
+    case "incorrect":
+      return "red";
     default:
-      return 'black';
+      return "black";
   }
 };
 
