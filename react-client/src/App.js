@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>Hello</p>
+        
         <Game /> {/* Lägg till Game-komponenten här */}
       </header>
     </div>

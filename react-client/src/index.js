@@ -15,6 +15,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from './App';
 import AboutUs from "./pages/AboutUs";
+import Highscore from "./pages/Highscore";
 
 export default function App() {
   return (
@@ -22,6 +23,8 @@ export default function App() {
       <Routes>
           <Route index element={<Home />} />
           <Route path="aboutus" element={<AboutUs />} />
+          <Route path="highscore" element={<Highscore />} />
+          
       </Routes>
     </BrowserRouter>
   );

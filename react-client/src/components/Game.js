@@ -7,9 +7,12 @@ const Game = () => {
   const [guess, setGuess] = useState("");
   const [feedback, setFeedback] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [letterCount, setLetterCount] = useState(5);
+  const [uniqueChar, setUniqueChar] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5080/api/words")
+    const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
+    fetch(url)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -19,7 +22,7 @@ const Game = () => {
       .then((data) => {
         console.log(data.words);
 
-        const word = selectWord(data.words, 5, false); 
+        const word = selectWord(data.words); 
 
         console.log('Correct word: ' + word)
         setCorrectWord(word);
@@ -27,7 +30,7 @@ const Game = () => {
       // .catch((error) => {
       //   console.error("Fetch Error:", error);
       // });
-  }, []);
+  }, [letterCount, uniqueChar]);
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
@@ -46,6 +49,25 @@ const Game = () => {
       <h1>Wordle-spel</h1>
       {!gameOver ? (
         <>
+             <div>
+            <label htmlFor="letterCount">Välj antal bokstäver: </label>
+            <input
+              id="letterCount"
+              type="number"
+              value={letterCount}
+              onChange={(e) => setLetterCount(e.target.value)} // Uppdaterar letterCount baserat på användarens inmatning
+              min="1" // Sätt ett lämpligt minimumvärde
+            />
+          </div>
+          <div>
+            <label htmlFor="uniqueChar">Unika bokstäver: </label>
+            <input 
+            id="uniqueChar"
+            type="checkbox"
+            checked={uniqueChar}
+            onChange={(e) => setUniqueChar(e.target.checked)}
+            />
+          </div>
           <form onSubmit={handleGuessSubmit}>
             <input
               type="text"
