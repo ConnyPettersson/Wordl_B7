@@ -37,6 +37,7 @@ const Game = () => {
 const [userName, setUserName] = useState(''); // Användarnamn
 
   const saveHighscore = (name, score) => {
+    console.log({ name, score });
     fetch('http://localhost:5080/api/highscore', {
     method: 'POST',
     headers: {
