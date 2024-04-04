@@ -1,30 +1,28 @@
-const express = require('express');
+// Importera express och din JSON-data
+import express from 'express';
+import data from '../data/words_dictionary.json' assert { type: "json" };;
+
 const router = express.Router();
-const data = require('../data/words_dictionary.json'); // Antag att din fil är JSON-formaterad
 
-// Funktion för att filtrera ord efter längd
-function filterWordsByLength(words, length) {
-  return words.filter(word => word.length === length);
-}
+// Funktion för att filtrera ord efter längd med en arrow-funktion
+const filterWordsByLength = (words, length) => words.filter(word => word.length === length);
 
-// Funktion för att säkerställa att alla bokstäver i ett ord är unika
-function ensureUniqueLetters(words) {
-  return words.filter(word => new Set(word.split('')).size === word.length);
-}
+// Funktion för att säkerställa att alla bokstäver i ett ord är unika med en arrow-funktion
+const ensureUniqueLetters = (words) => words.filter(word => new Set(word.split('')).size === word.length);
 
 router.get('/', (req, res) => {
-  let words = Object.keys(data); // Skapa en array av ord från JSON-nycklarna
-  const length = parseInt(req.query.length) || 5; // Standardlängd är 5 om inget annat anges
-  const uniqueLetters = req.query.unique === 'true'; // Kontrollera om unika bokstäver efterfrågas
+  let words = Object.keys(data);
+  const length = parseInt(req.query.length) || 5;
+  const uniqueLetters = req.query.unique === 'true';
 
-  words = filterWordsByLength(words, length); // Filtrera ord efter längd
+  words = filterWordsByLength(words, length);
 
   if (uniqueLetters) {
-    words = ensureUniqueLetters(words); // Filtrera ord för att endast inkludera de med unika bokstäver
+    words = ensureUniqueLetters(words);
   }
 
-  console.log('We made it this far');
   res.status(200).json({ words });
 });
 
-module.exports = router;
+// Exportera router med ES6-syntax
+export default router;

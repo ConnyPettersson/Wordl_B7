@@ -9,6 +9,7 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [letterCount, setLetterCount] = useState(5);
   const [uniqueChar, setUniqueChar] = useState(false);
+  
 
   useEffect(() => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
@@ -32,13 +33,44 @@ const Game = () => {
       // });
   }, [letterCount, uniqueChar]);
 
+  const [score, setScore] = useState(100); // Startpoäng
+const [userName, setUserName] = useState(''); // Användarnamn
+
+  const saveHighscore = (name, score) => {
+    fetch('http://localhost:5080/api/highscore', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, score }),
+  })
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error('Failed to save highscore');
+    }
+    return res.json();
+  })
+  .then((data) => {
+    console.log('Highscore saved:', data);
+  })
+  .catch((error) => {
+    console.error('Error saving highscore:', error);
+  });
+
+  };
+
   const handleGuessSubmit = (e) => {
     e.preventDefault();
     const currentFeedback = input(guess, correctWord);
     setFeedback(currentFeedback);
+    setScore((prevScore) => prevScore - 1);
 
     if (currentFeedback.every((item) => item.result === "correct")) {
       setGameOver(true);
+      // Skicka poäng och användarnamn till backend här
+    } else if (score <= 1) { // Om poängen är 1 innan avdrag, blir nästa 0 och game over
+      setGameOver(true);
+      // Du kan välja att hantera game over vid 0 poäng här, kanske skicka poängen även då
     }
 
     setGuess("");
@@ -89,10 +121,19 @@ const Game = () => {
           </div>
         </>
       ) : (
+        <>
         <div>
           <p>Grattis, du gissade rätt ord!</p>
-          <button onClick={() => window.location.reload()}>Spela igen</button>
+          <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value.substring(0, 30))}
+              placeholder="Skriv ditt namn"
+            />
+            <button onClick={() => saveHighscore(userName, score)}>Spara Highscore</button>
         </div>
+          <button onClick={() => window.location.reload()}>Spela igen</button>
+          </>
       )}
     </div>
   );
