@@ -7,9 +7,13 @@ app.use((req, res, next) => {
   next();
 });
 
-const port = 5080; // Välj en port som passar för din applikation
+/* const port = 5080;
 
-// Starta servern med app-konfigurationen
 app.listen(port, () => {
   console.log(`Servern lyssnar på port ${port}`);
+}); */
+
+const PORT = process.env.PORT || 5080;
+app.listen(PORT, () => {
+  console.log(`Servern lyssnar på port ${PORT}`);
 });

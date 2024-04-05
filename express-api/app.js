@@ -16,16 +16,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 import mongoose from 'mongoose';
-mongoose.connect('mongodb://localhost:27017/Wordl_B7', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://127.0.0.1:27017/Wordl_B7');
 
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Eller '*' för att tillåta alla ursprung
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+
+app.use(express.json());
 app.use('/api/highscore', highscoreRoutes);
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
