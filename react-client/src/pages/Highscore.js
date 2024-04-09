@@ -18,10 +18,10 @@ const Highscore = () => {
     <>
       <main>
         <section>
-          <h2>Highscore</h2>
+          <h2 style={{marginLeft: '40px'}}>Highscore</h2>
           <ul>
             {highscores.map((score, index) => (
-              <li key={index}>{score.name}: {score.score} {score.guesses} {score.time}</li>
+              <li style={{marginTop: '20px'}} key={index}>{score.name}: score: {score.score} Guesses: {score.guesses} Time: {score.time} Number of Letters: {score.letterCount} Unique Characters: {score.uniqueChar}</li>
             ))}
           </ul>
         </section>

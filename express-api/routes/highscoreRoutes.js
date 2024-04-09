@@ -6,8 +6,8 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   console.log(req.body);
   try {
-  const { name, score, time, guesses, letterCount } = req.body;
-  const newHighscore = new Highscore({ name, score, time, guesses, letterCount });
+  const { name, score, time, guesses, letterCount, uniqueChar } = req.body;
+  const newHighscore = new Highscore({ name, score, time, guesses, letterCount, uniqueChar });
 
     await newHighscore.save();
   

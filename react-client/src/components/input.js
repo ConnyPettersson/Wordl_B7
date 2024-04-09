@@ -1,5 +1,4 @@
 export default function input(guess, correctWord) {
-  
   guess = guess.toLowerCase();
   correctWord = correctWord.toLowerCase();
 

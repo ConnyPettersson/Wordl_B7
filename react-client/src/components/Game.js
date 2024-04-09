@@ -12,7 +12,7 @@ const Game = () => {
   const [uniqueChar, setUniqueChar] = useState(false);
   const [guessCount, setGuessCount] = useState(0);
   const [score, setScore] = useState(100); // Startpoäng
-  const [userName, setUserName] = useState(''); // Användarnamn
+  const [userName, setUserName] = useState(""); // Användarnamn
   const [highscoreSaved, setHighscoreSaved] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -25,9 +25,8 @@ const Game = () => {
       .then((data) => {
         const word = selectWord(data.words);
 
-        console.log('Correct word: ' + word);
+        console.log("Correct word: " + word);
         setCorrectWord(word);
-        
       });
   }, [letterCount, uniqueChar]);
 
@@ -47,51 +46,61 @@ const Game = () => {
   const saveHighscore = () => {
     if (startTime && endTime) {
       const duration = (endTime - startTime) / 1000;
-      const data = { name: userName, score, time: duration, guesses: guesses.toString(), letterCount: letterCount };
-      
-      fetch('http://localhost:5080/api/highscore', {
-        method: 'POST',
+      const data = {
+        name: userName,
+        score,
+        time: duration,
+        guesses: guesses.toString(),
+        letterCount: letterCount,
+        uniqueChar: uniqueChar.toString(),
+      };
+
+      fetch("http://localhost:5080/api/highscore", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       })
-      .then((res) => res.json())
-      .then((data) => {
-        setHighscoreSaved(true);
-      })
-      .catch((error) => {
-        console.error('Error saving highscore:', error);
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          setHighscoreSaved(true);
+        })
+        .catch((error) => {
+          console.error("Error saving highscore:", error);
+        });
     }
   };
-
 
   const handleGameOver = () => {
     setEndTime(new Date()); // Ställ in sluttiden när spelet är över
     setGameOver(true);
   };
 
-
   const handleGuessSubmit = (e) => {
+    if (guess === "") {
+      alert("Input must not be empty");
+      return;
+    }
+
     e.preventDefault();
     setGuessCount((prevCount) => prevCount + 1);
-
     const currentFeedback = input(guess, correctWord);
     setFeedback(currentFeedback);
     setScore((prevScore) => prevScore - 1);
 
     guesses.push(guess);
 
-    if (currentFeedback.every((item) => item.result === "correct") || score <= 1 || guessCount >= 98) {
+    if (
+      currentFeedback.every((item) => item.result === "correct") ||
+      score <= 1 ||
+      guessCount >= 98
+    ) {
       handleGameOver();
     }
 
     setGuess("");
   };
-
-
-
 
   const fetchNewWord = () => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
@@ -99,17 +108,15 @@ const Game = () => {
       .then((response) => response.json())
       .then((data) => {
         const word = selectWord(data.words);
-        console.log('Correct word: ' + word);
+        console.log("Correct word: " + word);
         setCorrectWord(word);
       })
-      .catch((error) => console.error('Error fetching word:', error));
+      .catch((error) => console.error("Error fetching word:", error));
   };
-  
 
   useEffect(() => {
     fetchNewWord(); // Kalla på fetchNewWord när komponenten monteras eller när letterCount eller uniqueChar ändras
   }, [letterCount, uniqueChar]);
-  
 
   const handleReset = () => {
     const resetTime = new Date();
@@ -118,16 +125,15 @@ const Game = () => {
     setGameOver(false);
     setGuessCount(0);
     setScore(100);
-    setGuess('');
+    setGuess("");
     setFeedback([]);
     setHighscoreSaved(false);
-    setUserName('');
+    setUserName("");
     setStartTime(resetTime);
     setCurrentTime(resetTime);
     setEndTime(null);
     setGuesses([]);
   };
-  
 
   const formatTime = () => {
     if (!startTime || !currentTime) {
@@ -139,82 +145,90 @@ const Game = () => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-
   return (
-    <div style={{ textAlign: "center"}}>
-      <h1>Wordle-spel</h1>
+    <div style={{ textAlign: "center" }}>
+      <h1>Wordle-Game</h1>
       {!gameOver ? (
         <>
           <div>
-            <label htmlFor="letterCount">Välj antal bokstäver: </label>
-            <input 
+            <label htmlFor="letterCount">Choose number of letters: </label>
+            <input
+              style={{ marginBottom: "20px" }}
               id="letterCount"
               type="number"
               value={letterCount}
               onChange={(e) => setLetterCount(e.target.value)}
               min="1"
-              />
+            />
           </div>
           <div>
-            <label htmlFor="uniqueChar">Endast unika bokstäver: </label>
+            <label htmlFor="uniqueChar">Only unique characters: </label>
             <input
-              style={{ marginTop: '20px'}}
               id="uniqueChar"
               type="checkbox"
+              style={{ verticalAlign: 'middle'}}
               checked={uniqueChar}
               onChange={(e) => setUniqueChar(e.target.checked)}
             />
           </div>
-        <div style={{ textAlign: "center", marginTop: '20px' }}>
-          <button onClick={handleReset}>Starta nytt spel</button>
-          
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button onClick={handleReset}>Start new game</button>
           </div>
           <form onSubmit={handleGuessSubmit}>
             <input
-              style={{ marginTop: '20px' }}
+              style={{ margin: "10px" }}
               type="text"
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
               maxLength={correctWord.length}
             />
-            <button type="submit">Gissa</button>
+            <button type="submit">Guess</button>
           </form>
-          <div>Antal gissningar: {guessCount}</div>
+          <div>Number of guesses: {guessCount}</div>
           <div>
             {feedback.map((item, index) => (
-              <span key={index} style={{ color: getFeedbackColor(item.result) }}>
+              <span
+                key={index}
+                style={{ color: getFeedbackColor(item.result) }}
+              >
                 {item.letter}
               </span>
             ))}
           </div>
-          <div>Tid: {formatTime()}</div>
-          
+          <div style={{ marginTop: '10px'}}>Time: {formatTime()}</div>
         </>
       ) : guessCount >= 100 ? (
         <>
-          <div style={{ color: "red", fontSize: "24px", textAlign: "center" }}>Game Over, too many guesses!</div>
-          <button onClick={handleReset}>Starta nytt spel</button>
+          <div style={{ color: "red", fontSize: "24px", textAlign: "center" }}>
+            Game Over, too many guesses!
+          </div>
+          <button onClick={handleReset}>Start new game</button>
         </>
       ) : (
         <>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "green", fontSize: "24px" }}>Grattis, du gissade rätt ord!</p>
-            {highscoreSaved && <div>Highscore sparad!</div>}
+            <p style={{ color: "green", fontSize: "24px" }}>
+              Congrats, you nailed it!
+            </p>
+            {highscoreSaved && <div>Highscore saved!</div>}
             <input
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value.substring(0, 30))}
               placeholder="Skriv ditt namn"
             />
-            <button onClick={() => saveHighscore(userName, score)}>Spara Highscore</button>
+            <button onClick={() => saveHighscore(userName, score)}>
+              Save Highscore
+            </button>
           </div>
-          <div><button onClick={handleReset}>Spela en gång till</button></div>
+          <div>
+            <button onClick={handleReset}>Play again</button>
+          </div>
         </>
       )}
     </div>
   );
- };
-
+};
 
 const getFeedbackColor = (result) => {
   switch (result) {
