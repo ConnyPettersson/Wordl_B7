@@ -5,6 +5,7 @@ import selectWord from "./selectWord";
 const Game = () => {
   const [correctWord, setCorrectWord] = useState("");
   const [guess, setGuess] = useState("");
+  const [guesses, setGuesses] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [gameOver, setGameOver] = useState(false);
   const [letterCount, setLetterCount] = useState(5);
@@ -46,7 +47,7 @@ const Game = () => {
   const saveHighscore = () => {
     if (startTime && endTime) {
       const duration = (endTime - startTime) / 1000;
-      const data = { name: userName, score, time: duration };
+      const data = { name: userName, score, time: duration, guesses: guesses.toString() };
       
       fetch('http://localhost:5080/api/highscore', {
         method: 'POST',
@@ -66,11 +67,11 @@ const Game = () => {
   };
 
 
-
   const handleGameOver = () => {
     setEndTime(new Date()); // Ställ in sluttiden när spelet är över
     setGameOver(true);
   };
+
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
@@ -80,12 +81,18 @@ const Game = () => {
     setFeedback(currentFeedback);
     setScore((prevScore) => prevScore - 1);
 
+    guesses.push(guess);
+    console.log(guesses);
+
     if (currentFeedback.every((item) => item.result === "correct") || score <= 1 || guessCount >= 98) {
       handleGameOver();
     }
 
     setGuess("");
   };
+
+
+
 
   const fetchNewWord = () => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
@@ -99,10 +106,12 @@ const Game = () => {
       .catch((error) => console.error('Error fetching word:', error));
   };
   
+
   useEffect(() => {
     fetchNewWord(); // Kalla på fetchNewWord när komponenten monteras eller när letterCount eller uniqueChar ändras
   }, [letterCount, uniqueChar]);
   
+
   const handleReset = () => {
     const resetTime = new Date();
     fetchNewWord(); // Kalla även på fetchNewWord när spelet återställs
@@ -117,9 +126,9 @@ const Game = () => {
     setStartTime(resetTime);
     setCurrentTime(resetTime);
     setEndTime(null);
+    setGuesses([]);
   };
   
-
 
   const formatTime = () => {
     if (!startTime || !currentTime) {
@@ -130,7 +139,6 @@ const Game = () => {
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
-
 
 
   return (
@@ -160,6 +168,7 @@ const Game = () => {
           </div>
         <div style={{ textAlign: "center", marginTop: '20px' }}>
           <button onClick={handleReset}>Starta nytt spel</button>
+          
           </div>
           <form onSubmit={handleGuessSubmit}>
             <input
@@ -205,8 +214,8 @@ const Game = () => {
       )}
     </div>
   );
-  
  };
+
 
 const getFeedbackColor = (result) => {
   switch (result) {

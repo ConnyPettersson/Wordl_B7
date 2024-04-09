@@ -21,7 +21,7 @@ const Highscore = () => {
           <h2>Highscore</h2>
           <ul>
             {highscores.map((score, index) => (
-              <li key={index}>{score.name}: {score.score}</li>
+              <li key={index}>{score.name}: {score.score} {score.guesses} {score.time}</li>
             ))}
           </ul>
         </section>
