@@ -15,6 +15,7 @@ const Game = () => {
   const [highscoreSaved, setHighscoreSaved] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [currentTime, setCurrentTime] = useState(null);
 
   useEffect(() => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
@@ -28,6 +29,19 @@ const Game = () => {
         setStartTime(new Date()); // Starta tiden när spelet börjar
       });
   }, [letterCount, uniqueChar]);
+
+  useEffect(() => {
+    let intervalId;
+    if (!gameOver && startTime) {
+      intervalId = setInterval(() => {
+        setCurrentTime(new Date()); // Uppdatera aktuell tid varje sekund
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(intervalId); // Stoppa timern när spelet är över eller komponenten avmonteras
+    };
+  }, [startTime, gameOver]);
 
   const saveHighscore = () => {
     if (startTime && endTime) {
@@ -51,16 +65,12 @@ const Game = () => {
     }
   };
 
+
+
   const handleGameOver = () => {
     setEndTime(new Date()); // Ställ in sluttiden när spelet är över
     setGameOver(true);
   };
-
-/*   useEffect(() => {
-    if (gameOver && !highscoreSaved) {
-      saveHighscore();
-    }
-  }, [gameOver, highscoreSaved, userName, endTime]); // Uppdaterad beroendelista */
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
@@ -87,6 +97,7 @@ const Game = () => {
     setUserName('');
     setStartTime(new Date()); // Återställ starttiden för nästa omgång
     setEndTime(null); // Återställ sluttiden
+    setCurrentTime(null);
   };
 
   const formatTime = () => {
