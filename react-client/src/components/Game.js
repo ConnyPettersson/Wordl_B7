@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import input from "./input"; // Antag att detta är sökvägen till din input-funktion
-import selectWord from "./selectWord"; // Antag att detta är sökvägen till din selectWord-funktion
+import input from "./input";
+import selectWord from "./selectWord";
 
 const Game = () => {
   const [correctWord, setCorrectWord] = useState("");
@@ -10,56 +10,57 @@ const Game = () => {
   const [letterCount, setLetterCount] = useState(5);
   const [uniqueChar, setUniqueChar] = useState(false);
   const [guessCount, setGuessCount] = useState(0);
-  
+  const [score, setScore] = useState(100); // Startpoäng
+  const [userName, setUserName] = useState(''); // Användarnamn
+  const [highscoreSaved, setHighscoreSaved] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
 
   useEffect(() => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
     fetch(url)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
-        console.log(data.words);
+        const word = selectWord(data.words);
 
-        const word = selectWord(data.words); 
-
-        console.log('Correct word: ' + word)
+        console.log('Correct word: ' + word);
         setCorrectWord(word);
-      })
-      // .catch((error) => {
-      //   console.error("Fetch Error:", error);
-      // });
+        setStartTime(new Date()); // Starta tiden när spelet börjar
+      });
   }, [letterCount, uniqueChar]);
 
-  const [score, setScore] = useState(10); // Startpoäng
-const [userName, setUserName] = useState(''); // Användarnamn
-
-  const saveHighscore = (name, score) => {
-    console.log({ name, score });
-    fetch('http://localhost:5080/api/highscore', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name, score }),
-  })
-  .then((res) => {
-    if (!res.ok) {
-      throw new Error('Failed to save highscore');
+  const saveHighscore = () => {
+    if (startTime && endTime) {
+      const duration = (endTime - startTime) / 1000;
+      const data = { name: userName, score, time: duration };
+      
+      fetch('http://localhost:5080/api/highscore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        setHighscoreSaved(true);
+      })
+      .catch((error) => {
+        console.error('Error saving highscore:', error);
+      });
     }
-    return res.json();
-  })
-  .then((data) => {
-    console.log('Highscore saved:', data);
-  })
-  .catch((error) => {
-    console.error('Error saving highscore:', error);
-  });
-
   };
+
+  const handleGameOver = () => {
+    setEndTime(new Date()); // Ställ in sluttiden när spelet är över
+    setGameOver(true);
+  };
+
+/*   useEffect(() => {
+    if (gameOver && !highscoreSaved) {
+      saveHighscore();
+    }
+  }, [gameOver, highscoreSaved, userName, endTime]); // Uppdaterad beroendelista */
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
@@ -69,19 +70,36 @@ const [userName, setUserName] = useState(''); // Användarnamn
     setFeedback(currentFeedback);
     setScore((prevScore) => prevScore - 1);
 
-    if (currentFeedback.every((item) => item.result === "correct")) {
-      setGameOver(true);
-      // Skicka poäng och användarnamn till backend här
-    } else if (score <= 1 || guessCount >= 9) { // Om poängen är 1 innan avdrag, blir nästa 0 och game over
-      setGameOver(true);
-      // Du kan välja att hantera game over vid 0 poäng här, kanske skicka poängen även då
+    if (currentFeedback.every((item) => item.result === "correct") || score <= 1 || guessCount >= 98) {
+      handleGameOver();
     }
 
     setGuess("");
   };
 
+  const handleReset = () => {
+    setGameOver(false);
+    setGuessCount(0);
+    setScore(100);
+    setGuess('');
+    setFeedback([]);
+    setHighscoreSaved(false);
+    setUserName('');
+    setStartTime(new Date()); // Återställ starttiden för nästa omgång
+    setEndTime(null); // Återställ sluttiden
+  };
+
+  const formatTime = () => {
+    const duration = endTime ? (endTime - startTime) / 1000 : (new Date() - startTime) / 1000;
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+
+
   return (
-    <div>
+    <div style={{ textAlign: "center"}}>
       <h1>Wordle-spel</h1>
       {!gameOver ? (
         <>
@@ -113,6 +131,7 @@ const [userName, setUserName] = useState(''); // Användarnamn
             />
             <button type="submit">Gissa</button>
           </form>
+          <div>Antal gissningar: {guessCount}</div>
           <div>
             {feedback.map((item, index) => (
               <span key={index} style={{ color: getFeedbackColor(item.result) }}>
@@ -120,13 +139,17 @@ const [userName, setUserName] = useState(''); // Användarnamn
               </span>
             ))}
           </div>
+          <div>Tid: {formatTime()}</div>
         </>
-      ) : guessCount >= 10 ? (
-        <div style={{ color: "red", fontSize: "24px", textAlign: "center" }}>Game Over, too many guesses!</div>
+      ) : guessCount >= 100 ? (
+        <>
+          <div style={{ color: "red", fontSize: "24px", textAlign: "center" }}>Game Over, too many guesses!</div>
+          <button onClick={handleReset}>Starta nytt spel</button>
+        </>
       ) : (
         <>
-          <div>
-            <p>Grattis, du gissade rätt ord!</p>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ color: "green", fontSize: "24px" }}>Grattis, du gissade rätt ord!</p>
             <input
               type="text"
               value={userName}
@@ -135,11 +158,14 @@ const [userName, setUserName] = useState(''); // Användarnamn
             />
             <button onClick={() => saveHighscore(userName, score)}>Spara Highscore</button>
           </div>
-          <button onClick={() => window.location.reload()}>Spela igen</button>
+          <div style={{ textAlign: "center" }}>
+          <button onClick={handleReset}>Starta nytt spel</button>
+          </div>
         </>
       )}
     </div>
   );
+  
  };
 
 const getFeedbackColor = (result) => {

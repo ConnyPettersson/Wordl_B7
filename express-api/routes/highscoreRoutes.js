@@ -6,9 +6,14 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   console.log(req.body);
   try {
-    const { name, score } = req.body;
-    const newHighscore = new Highscore({ name, score });
+  const { name, score, time } = req.body;
+  const newHighscore = new Highscore({ name, score, time });
+ 
+
     await newHighscore.save();
+  
+    console.log('Highscore saved:', newHighscore);
+  
     res.status(201).json(newHighscore);
   } catch (error) {
     console.error(error);
