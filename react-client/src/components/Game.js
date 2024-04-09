@@ -47,7 +47,7 @@ const Game = () => {
   const saveHighscore = () => {
     if (startTime && endTime) {
       const duration = (endTime - startTime) / 1000;
-      const data = { name: userName, score, time: duration, guesses: guesses.toString() };
+      const data = { name: userName, score, time: duration, guesses: guesses.toString(), letterCount: letterCount };
       
       fetch('http://localhost:5080/api/highscore', {
         method: 'POST',
@@ -82,7 +82,6 @@ const Game = () => {
     setScore((prevScore) => prevScore - 1);
 
     guesses.push(guess);
-    console.log(guesses);
 
     if (currentFeedback.every((item) => item.result === "correct") || score <= 1 || guessCount >= 98) {
       handleGameOver();
