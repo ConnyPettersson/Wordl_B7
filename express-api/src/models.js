@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const HighscoreSchema = new mongoose.Schema({
   name: String,
@@ -6,9 +6,9 @@ const HighscoreSchema = new mongoose.Schema({
   time: Number,
   guesses: String,
   letterCount: Number,
-  uniqueChar: String
+  uniqueChar: String,
 });
 
-const Highscore = mongoose.model('Highscore', HighscoreSchema);
+const Highscore = mongoose.model("Highscore", HighscoreSchema);
 
-export default Highscore 
+export default Highscore;

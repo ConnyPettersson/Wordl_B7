@@ -1,35 +1,39 @@
-import express from 'express';
-import Highscore from '../src/models.js'; // Antag att models.js ligger direkt under src-mappen
+import express from "express";
+import Highscore from "../src/models.js";
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
-  console.log(req.body);
+router.post("/", async (req, res) => {
   try {
-  const { name, score, time, guesses, letterCount, uniqueChar } = req.body;
-  const newHighscore = new Highscore({ name, score, time, guesses, letterCount, uniqueChar });
+    const { name, score, time, guesses, letterCount, uniqueChar } = req.body;
+    const newHighscore = new Highscore({
+      name,
+      score,
+      time,
+      guesses,
+      letterCount,
+      uniqueChar,
+    });
 
     await newHighscore.save();
-  
-    console.log('Highscore saved:', newHighscore);
-  
+
     res.status(201).json(newHighscore);
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: 'Could not save highscore', error });
+    res.status(400).json({ message: "Could not save highscore", error });
   }
 });
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const highscores = await Highscore.find().sort({ score: -1 }); // Antag att du vill sortera resultaten efter poäng, med högst poäng först
+    const highscores = await Highscore.find().sort({ score: -1 });
     res.json(highscores);
   } catch (error) {
     console.error(error);
-    res.status(500).send({ error: 'Something went wrong fetching the highscores' });
+    res
+      .status(500)
+      .send({ error: "Something went wrong fetching the highscores" });
   }
 });
 
 export default router;
-
-

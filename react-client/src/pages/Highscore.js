@@ -1,27 +1,30 @@
-// I din React-komponent Highscore.js
-import React, { useState, useEffect } from 'react';
-import './Highscore.css';
+import React, { useState, useEffect } from "react";
+import "./Highscore.css";
 
 const Highscore = () => {
   const [highscores, setHighscores] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5080/api/highscore') // Anpassa URL:en efter din backend-konfiguration
+    fetch("http://localhost:5080/api/highscore")
       .then((res) => res.json())
       .then((data) => {
         setHighscores(data);
       })
-      .catch((error) => console.error('Error fetching highscores:', error));
+      .catch((error) => console.error("Error fetching highscores:", error));
   }, []);
 
   return (
     <>
       <main>
         <section>
-          <h2 style={{marginLeft: '40px'}}>Highscore</h2>
+          <h2 style={{ marginLeft: "40px" }}>Highscore</h2>
           <ul>
             {highscores.map((score, index) => (
-              <li style={{marginTop: '20px'}} key={index}>{score.name}: score: {score.score} Guesses: {score.guesses} Time: {score.time} Number of Letters: {score.letterCount} Unique Characters: {score.uniqueChar}</li>
+              <li style={{ marginTop: "20px" }} key={index}>
+                {score.name}: Score: {score.score} Guesses: {score.guesses}{" "}
+                Time: {score.time} Number of letters: {score.letterCount} Unique
+                characters: {score.uniqueChar}
+              </li>
             ))}
           </ul>
         </section>

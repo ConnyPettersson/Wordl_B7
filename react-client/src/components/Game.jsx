@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import input from "./input";
 import selectWord from "./selectWord";
 
@@ -11,35 +11,38 @@ const Game = () => {
   const [letterCount, setLetterCount] = useState(5);
   const [uniqueChar, setUniqueChar] = useState(false);
   const [guessCount, setGuessCount] = useState(0);
-  const [score, setScore] = useState(100); // Startpoäng
-  const [userName, setUserName] = useState(""); // Användarnamn
+  const [score, setScore] = useState(100);
+  const [userName, setUserName] = useState("");
   const [highscoreSaved, setHighscoreSaved] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
 
-  useEffect(() => {
+  const fetchNewWord = useCallback(() => {
     const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
         const word = selectWord(data.words);
-
-        console.log("Correct word: " + word);
         setCorrectWord(word);
-      });
+      })
+      .catch((error) => console.error("Error fetching word:", error));
   }, [letterCount, uniqueChar]);
+
+  useEffect(() => {
+    fetchNewWord();
+  }, [fetchNewWord]);
 
   useEffect(() => {
     let intervalId;
     if (!gameOver && startTime) {
       intervalId = setInterval(() => {
-        setCurrentTime(new Date()); // Uppdatera aktuell tid varje sekund
+        setCurrentTime(new Date());
       }, 1000);
     }
 
     return () => {
-      clearInterval(intervalId); // Stoppa timern när spelet är över eller komponenten avmonteras
+      clearInterval(intervalId);
     };
   }, [startTime, gameOver]);
 
@@ -73,7 +76,7 @@ const Game = () => {
   };
 
   const handleGameOver = () => {
-    setEndTime(new Date()); // Ställ in sluttiden när spelet är över
+    setEndTime(new Date());
     setGameOver(true);
   };
 
@@ -102,26 +105,9 @@ const Game = () => {
     setGuess("");
   };
 
-  const fetchNewWord = () => {
-    const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        const word = selectWord(data.words);
-        console.log("Correct word: " + word);
-        setCorrectWord(word);
-      })
-      .catch((error) => console.error("Error fetching word:", error));
-  };
-
-  useEffect(() => {
-    fetchNewWord(); // Kalla på fetchNewWord när komponenten monteras eller när letterCount eller uniqueChar ändras
-  }, [letterCount, uniqueChar]);
-
   const handleReset = () => {
     const resetTime = new Date();
-    fetchNewWord(); // Kalla även på fetchNewWord när spelet återställs
-    // Återställ resten av statet som tidigare
+    fetchNewWord();
     setGameOver(false);
     setGuessCount(0);
     setScore(100);
@@ -166,7 +152,7 @@ const Game = () => {
             <input
               id="uniqueChar"
               type="checkbox"
-              style={{ verticalAlign: 'middle'}}
+              style={{ verticalAlign: "middle" }}
               checked={uniqueChar}
               onChange={(e) => setUniqueChar(e.target.checked)}
             />
@@ -195,7 +181,7 @@ const Game = () => {
               </span>
             ))}
           </div>
-          <div style={{ marginTop: '10px'}}>Time: {formatTime()}</div>
+          <div style={{ marginTop: "10px" }}>Time: {formatTime()}</div>
         </>
       ) : guessCount >= 100 ? (
         <>
