@@ -186,7 +186,7 @@ const Game = () => {
       ) : guessCount >= 100 ? (
         <>
           <div style={{ color: "red", fontSize: "24px", textAlign: "center" }}>
-            Game Over, too many guesses!
+            Game Over, too many guesses!!!
           </div>
           <button onClick={handleReset}>Start new game</button>
         </>
