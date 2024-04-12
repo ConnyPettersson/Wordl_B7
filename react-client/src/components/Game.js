@@ -26,7 +26,7 @@ const Game = () => {
 
         console.log('Correct word: ' + word);
         setCorrectWord(word);
-        setStartTime(new Date()); // Starta tiden när spelet börjar
+        
       });
   }, [letterCount, uniqueChar]);
 
@@ -87,7 +87,26 @@ const Game = () => {
     setGuess("");
   };
 
+  const fetchNewWord = () => {
+    const url = `http://localhost:5080/api/words?length=${letterCount}&unique=${uniqueChar}`;
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        const word = selectWord(data.words);
+        console.log('Correct word: ' + word);
+        setCorrectWord(word);
+      })
+      .catch((error) => console.error('Error fetching word:', error));
+  };
+  
+  useEffect(() => {
+    fetchNewWord(); // Kalla på fetchNewWord när komponenten monteras eller när letterCount eller uniqueChar ändras
+  }, [letterCount, uniqueChar]);
+  
   const handleReset = () => {
+    const resetTime = new Date();
+    fetchNewWord(); // Kalla även på fetchNewWord när spelet återställs
+    // Återställ resten av statet som tidigare
     setGameOver(false);
     setGuessCount(0);
     setScore(100);
@@ -95,13 +114,18 @@ const Game = () => {
     setFeedback([]);
     setHighscoreSaved(false);
     setUserName('');
-    setStartTime(new Date()); // Återställ starttiden för nästa omgång
-    setEndTime(null); // Återställ sluttiden
-    setCurrentTime(null);
+    setStartTime(resetTime);
+    setCurrentTime(resetTime);
+    setEndTime(null);
   };
+  
+
 
   const formatTime = () => {
-    const duration = endTime ? (endTime - startTime) / 1000 : (new Date() - startTime) / 1000;
+    if (!startTime || !currentTime) {
+      return "0:00";
+    }
+    const duration = (currentTime - startTime) / 1000;
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
@@ -116,25 +140,30 @@ const Game = () => {
         <>
           <div>
             <label htmlFor="letterCount">Välj antal bokstäver: </label>
-            <input
+            <input 
               id="letterCount"
               type="number"
               value={letterCount}
               onChange={(e) => setLetterCount(e.target.value)}
               min="1"
-            />
+              />
           </div>
           <div>
-            <label htmlFor="uniqueChar">Unika bokstäver: </label>
+            <label htmlFor="uniqueChar">Endast unika bokstäver: </label>
             <input
+              style={{ marginTop: '20px'}}
               id="uniqueChar"
               type="checkbox"
               checked={uniqueChar}
               onChange={(e) => setUniqueChar(e.target.checked)}
             />
           </div>
+        <div style={{ textAlign: "center", marginTop: '20px' }}>
+          <button onClick={handleReset}>Starta nytt spel</button>
+          </div>
           <form onSubmit={handleGuessSubmit}>
             <input
+              style={{ marginTop: '20px' }}
               type="text"
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
@@ -151,6 +180,7 @@ const Game = () => {
             ))}
           </div>
           <div>Tid: {formatTime()}</div>
+          
         </>
       ) : guessCount >= 100 ? (
         <>
@@ -161,6 +191,7 @@ const Game = () => {
         <>
           <div style={{ textAlign: "center" }}>
             <p style={{ color: "green", fontSize: "24px" }}>Grattis, du gissade rätt ord!</p>
+            {highscoreSaved && <div>Highscore sparad!</div>}
             <input
               type="text"
               value={userName}
@@ -169,9 +200,7 @@ const Game = () => {
             />
             <button onClick={() => saveHighscore(userName, score)}>Spara Highscore</button>
           </div>
-          <div style={{ textAlign: "center" }}>
-          <button onClick={handleReset}>Starta nytt spel</button>
-          </div>
+          <div><button onClick={handleReset}>Spela en gång till</button></div>
         </>
       )}
     </div>
